@@ -11,17 +11,17 @@ router.post("/hangouts", async (req, res) => {
 	const { title, description, location, date, time, image, auth } = req.body;
 
 	try {
-		let newHangout = await Hangout.create({
+		let response = await Hangout.create({
 			title,
 			description,
 			location,
 			date,
 			time,
-            image,
-			auth
+			image,
+			auth,
 		});
 
-		res.json(newHangout);
+		res.json(response);
 	} catch (error) {
 		res.json(error);
 	}

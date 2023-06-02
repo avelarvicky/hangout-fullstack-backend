@@ -1,19 +1,14 @@
 const { Schema, model } = require("mongoose");
 
 const hangoutSchema = new Schema({
-	user: {
-		type: Schema.Types.ObjectId,
-		ref: "User",
-	},
 	title: {
 		type: String,
-		required: true,
 		default: "New Hangout",
 	},
-	description: String,
+	description: String ,
 	location: String,
 	date: {
-		type: Date,
+		type: Number,
 		default: Date.now,
 	},
 	time: {
@@ -24,15 +19,14 @@ const hangoutSchema = new Schema({
 		type: String,
 		enum: ["public", "private"],
 		default: "public",
-		required: true,
 	},
-    image: String,
-    confirmations: [
-        {
-            type: Schema.Types.ObjectId,
-            ref: 'User',
-        },
-    ],
+	image: { type: String },
+	confirmations: [
+		{
+			type: Schema.Types.ObjectId,
+			ref: "User",
+		},
+	],
 	comments: [
 		{
 			type: Schema.Types.ObjectId,
