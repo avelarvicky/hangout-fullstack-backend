@@ -128,4 +128,16 @@ router.get("/verify", isAuthenticated, (req, res, next) => {
   res.status(200).json(req.payload);
 });
 
+// GET /auth/userprofile/:userId route to get profile
+router.get('/userprofile/:userId', async (req, res)=> {
+  const {userId} = req.params;
+
+  try {
+    let response = await User.findById(userId)
+    res.json(response)
+  } catch (error) {
+    res.status(500).json({ message: "Error retrieving user profile data" })
+  }
+})
+
 module.exports = router;
