@@ -5,29 +5,59 @@ const Hangout = require("../models/Hangout.model");
 const Comment = require("../models/Comment.model");
 
 // POST '/api/comments' route to create a new comment
-router.post("/comments", async (req, res) => {
-	const { content, rating, hangoutId } = req.body;
-
+router.post("/:id/comments", async (req, res) => {
+	const { content, hangoutId } = req.body;
+	const { id } = req.params;
+	// const user  = req.payload._id;
 	try {
 		// create a new comment
 		let newComment = await Comment.create({
 			content,
-			rating,
-			hangout: hangoutId,
 		});
 
 		// push new comment to hangout
-		let response = await Hangout.findByIdAndUpdate(hangoutId, {
+		let hangoutComment = await Hangout.findByIdAndUpdate(id, {
 			$push: { comments: newComment._id },
 		});
 
-		res.json(response);
+		/* let userComment = await Comment.findByIdAndUpdate(newComment._id, {
+			$push: { author: user },
+		}); */
+
+		res.json(hangoutComment);
 	} catch (error) {
 		res.json(error);
 	}
 });
 
-// GET /api/hangouts/:hangoutId to get details of a specific hangout
+// GET /api/comments route to get comments of a specific hangout
+router.get("/:id/comments", async (req, res) => {
+	const { id } = req.params;
+
+	try {
+		let hangout = await Hangout.findById(id);
+		
+		const hangoutPopulate = (populatedHangout) => {
+			let arr = [];
+			populatedHangout.comments.map( async (comment)=> {
+				let kevin = await populatedHangout.populate(comment)
+				arr.push(kevin)
+			})
+			console.log(arr)
+		}
+
+		hangout.populate();
+
+		/* let arr = [];
+		hangout.comments.map((comment)=> {
+			arr.push(comment.populate())
+		}) */
+
+		console.log(hangout);
+	} catch (error) {}
+});
+
+// GET /api/hangouts/:hangoutId to get details of a specific comment
 router.get("/comments/:commentId", async (req, res) => {
 	const { commentId } = req.params;
 
@@ -47,7 +77,7 @@ router.get("/comments/:commentId", async (req, res) => {
 // PUT '/api/comments/:commentId' route to edit comment
 router.put("/comments/:commentId", async (req, res) => {
 	const { commentId } = req.params;
-	const { content, rating } = req.body;
+	const { content } = req.body;
 
 	if (!mongoose.Types.ObjectId.isValid(commentId)) {
 		res.status(400).json({ message: "specified id is not valid" });
@@ -57,7 +87,7 @@ router.put("/comments/:commentId", async (req, res) => {
 	try {
 		let updatedComment = await Comment.findByIdAndUpdate(
 			commentId,
-			{ content, rating },
+			{ content },
 			{ new: true }
 		);
 		res.json(updatedComment);

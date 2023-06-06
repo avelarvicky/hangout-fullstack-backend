@@ -11,7 +11,9 @@ router.post("/hangouts", async (req, res) => {
 	const { title, description, location, date, time, image, auth } = req.body;
 
 	try {
-		let response = await Hangout.create({
+		let response;
+
+		response = await Hangout.create({
 			title,
 			description,
 			location,
@@ -19,6 +21,7 @@ router.post("/hangouts", async (req, res) => {
 			time,
 			image,
 			auth,
+			comments: []
 		});
 
 		res.json(response);
@@ -31,7 +34,7 @@ router.post("/hangouts", async (req, res) => {
 router.get("/hangouts", async (req, res) => {
 	try {
 		let allHangouts = await Hangout.find().populate("comments");
-		await allHangouts.populate("user");
+		/* await allHangouts.populate("user"); */
 		res.json(allHangouts);
 	} catch (error) {
 		res.json(error);
@@ -48,12 +51,8 @@ router.get("/hangouts/:hangoutId", async (req, res) => {
 	}
 
 	try {
-		let foundHangout = await Hangout.findById(hangoutId);
-		await foundHangout.populate("comments author");
-		await foundHangout.populate({
-			path: "author",
-			model: "User",
-		});
+		let foundHangout = await Hangout.findById(hangoutId)
+		.populate("comments");
 
 		res.status(200).json(foundHangout);
 	} catch (error) {
@@ -67,7 +66,7 @@ router.put("/hangouts/:hangoutId", async (req, res) => {
 	const { title, description, location, date, time, auth } = req.body;
 
 	if (!mongoose.Types.ObjectId.isValid(hangoutId)) {
-		res.status(400).json({ message: "specified id is not valid" }); // has to be a property bcs in axios we will do error.message
+		res.status(400).json({ message: "specified id is not valid" }); 
 		return;
 	}
 

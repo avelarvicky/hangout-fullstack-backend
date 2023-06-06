@@ -5,15 +5,15 @@ const hangoutSchema = new Schema({
 		type: String,
 		default: "New Hangout",
 	},
-	description: String ,
+	description: String,
 	location: String,
 	date: {
-		type: Number,
-		default: Date.now,
+		type: String,
+		default: "TBA",
 	},
 	time: {
-		type: Number,
-		default: new Date().getTime(),
+		type: String,
+		default: "00:00",
 	},
 	auth: {
 		type: String,
@@ -21,16 +21,16 @@ const hangoutSchema = new Schema({
 		default: "public",
 	},
 	image: { type: String },
-	confirmations: [
-		{
-			type: Schema.Types.ObjectId,
-			ref: "User",
-		},
-	],
 	comments: [
 		{
 			type: Schema.Types.ObjectId,
 			ref: "Comment",
+		},
+	],
+	confirmations: [
+		{
+			type: Schema.Types.ObjectId,
+			ref: "User",
 		},
 	],
 });
