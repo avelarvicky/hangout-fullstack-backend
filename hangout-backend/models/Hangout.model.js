@@ -29,8 +29,7 @@ const hangoutSchema = new Schema({
 	],
 	confirmations: [
 		{
-			type: Schema.Types.ObjectId,
-			ref: "User",
+			type: String,
 		},
 	],
 });

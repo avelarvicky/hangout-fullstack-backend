@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 
 const { isAuthenticated } = require("../middleware/jwt.middleware");
 
-const authRoutes = require("../routes/auth.routes")
+const authRoutes = require("../routes/auth.routes");
 
 // require data models
 const Hangout = require("../models/Hangout.model");
@@ -26,7 +26,7 @@ router.post("/hangouts", async (req, res) => {
 			time,
 			image,
 			auth,
-			comments: []
+			comments: [],
 		});
 
 		res.json(response);
@@ -56,8 +56,7 @@ router.get("/hangouts/:hangoutId", async (req, res) => {
 	}
 
 	try {
-		let foundHangout = await Hangout.findById(hangoutId)
-		.populate("comments");
+		let foundHangout = await Hangout.findById(hangoutId).populate("comments");
 
 		res.status(200).json(foundHangout);
 	} catch (error) {
@@ -71,7 +70,7 @@ router.put("/hangouts/:hangoutId", async (req, res) => {
 	const { title, description, location, date, time, auth } = req.body;
 
 	if (!mongoose.Types.ObjectId.isValid(hangoutId)) {
-		res.status(400).json({ message: "specified id is not valid" }); 
+		res.status(400).json({ message: "specified id is not valid" });
 		return;
 	}
 
@@ -105,10 +104,47 @@ router.delete("/hangouts/:hangoutId", async (req, res) => {
 });
 
 // use the auth routes as middleware
-router.use("/auth", authRoutes);
+/* router.use("/auth", authRoutes); */
 
-// POST /api/hangouts/:hangoutId to add to confirmations
-router.post("/hangouts/:hangoutId", isAuthenticated, async (req, res)=> {
+// POST /api/:hangoutId/confirmations to add to confirmations
+router.post("/:hangoutId/confirmations", async (req, res) => {
+	const { hangoutId } = req.params;
+	const { name } = req.body;
+
+	if (!mongoose.Types.ObjectId.isValid(hangoutId)) {
+		res.status(400).json({ message: "specified id is not valid" });
+		return;
+	}
+
+	try {
+		const updatedHangout = await Hangout.findByIdAndUpdate(
+			hangoutId,
+			{ $push: { confirmations: name } },
+			{ new: true }
+		);
+
+		res.json(updatedHangout);
+	} catch (error) {
+		res.json(error);
+	}
+});
+
+// GET /api/confirmations/:hangoutId route to get confirmations of a specific hangout
+router.get("/:hangoutId/confirmations", async (req, res) => {
+	const { hangoutId } = req.params;
+
+	try {
+		let foundHangout = await Hangout.findById(hangoutId).populate(
+			"confirmations"
+		);
+		res.json(foundHangout.confirmations);
+	} catch (error) {
+		res.json(error);
+	}
+});
+
+// POST /api/confirmations/:hangoutId to remove from confirmations
+router.post("/:hangoutId/confirmations", isAuthenticated, async (req, res) => {
 	const { hangoutId } = req.params;
 
 	if (!mongoose.Types.ObjectId.isValid(hangoutId)) {
@@ -117,24 +153,24 @@ router.post("/hangouts/:hangoutId", isAuthenticated, async (req, res)=> {
 	}
 
 	try {
-		const foundUserId = req.payload._id
-		let foundUser = await User.findById(foundUserId)
-		
+		const foundUserId = req.payload._id;
+		let foundUser = await User.findById(foundUserId);
+
 		if (!foundUser) {
 			res.status(404).json({ message: "User not found" });
 			return;
-		  }
-	  
-		  const updatedHangout = await Hangout.findByIdAndUpdate(
+		}
+
+		const updatedHangout = await Hangout.findByIdAndUpdate(
 			hangoutId,
-			{ $push: { confirmations: foundUser._id } },
+			{ $pull: { confirmations: foundUser._id } },
 			{ new: true }
-		  );
-	  
-		  res.json(updatedHangout);
+		);
+
+		res.json(updatedHangout);
 	} catch (error) {
-		res.json(error)
+		res.json(error);
 	}
-})
+});
 
 module.exports = router;

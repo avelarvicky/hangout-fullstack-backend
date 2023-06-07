@@ -131,7 +131,8 @@ router.get("/verify", isAuthenticated, (req, res, next) => {
 // GET /userprofile to get user profile
 router.get("/userprofile", isAuthenticated, async (req, res) => {
   try {
-    const userProfile = await User.findById(req.payload._id)
+    const currentUser = req.payload._id
+    const userProfile = await User.findById(currentUser)
     res.json(userProfile)
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
