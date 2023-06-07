@@ -128,15 +128,13 @@ router.get("/verify", isAuthenticated, (req, res, next) => {
   res.status(200).json(req.payload);
 });
 
-// GET /auth/userprofile/:userId route to get profile
-router.get('/userprofile/:userId', async (req, res)=> {
-  const {userId} = req.params;
-
+// GET /userprofile to get user profile
+router.get("/userprofile", isAuthenticated, async (req, res) => {
   try {
-    let response = await User.findById(userId)
-    res.json(response)
+    const userProfile = await User.findById(req.payload._id)
+    res.json(userProfile)
   } catch (error) {
-    res.status(500).json({ message: "Error retrieving user profile data" })
+    res.status(500).json({ message: "Internal server error" });
   }
 })
 

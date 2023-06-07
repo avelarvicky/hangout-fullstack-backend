@@ -2,9 +2,14 @@ const router = require("express").Router();
 
 const mongoose = require("mongoose");
 
+const { isAuthenticated } = require("../middleware/jwt.middleware");
+
+const authRoutes = require("../routes/auth.routes")
+
 // require data models
 const Hangout = require("../models/Hangout.model");
 const Comment = require("../models/Comment.model");
+const User = require("../models/User.model");
 
 // POST /api/hangouts route that creates a new hangout
 router.post("/hangouts", async (req, res) => {
@@ -98,5 +103,38 @@ router.delete("/hangouts/:hangoutId", async (req, res) => {
 		res.json(error);
 	}
 });
+
+// use the auth routes as middleware
+router.use("/auth", authRoutes);
+
+// POST /api/hangouts/:hangoutId to add to confirmations
+router.post("/hangouts/:hangoutId", isAuthenticated, async (req, res)=> {
+	const { hangoutId } = req.params;
+
+	if (!mongoose.Types.ObjectId.isValid(hangoutId)) {
+		res.status(400).json({ message: "specified id is not valid" });
+		return;
+	}
+
+	try {
+		const foundUserId = req.payload._id
+		let foundUser = await User.findById(foundUserId)
+		
+		if (!foundUser) {
+			res.status(404).json({ message: "User not found" });
+			return;
+		  }
+	  
+		  const updatedHangout = await Hangout.findByIdAndUpdate(
+			hangoutId,
+			{ $push: { confirmations: foundUser._id } },
+			{ new: true }
+		  );
+	  
+		  res.json(updatedHangout);
+	} catch (error) {
+		res.json(error)
+	}
+})
 
 module.exports = router;
