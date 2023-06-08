@@ -124,7 +124,7 @@ router.post("/:hangoutId/confirmations/:name", async (req, res) => {
 	}
 });
 
-// GET /api/confirmations/:hangoutId route to get confirmations of a specific hangout
+/* // GET /api/confirmations/:hangoutId route to get confirmations of a specific hangout
 router.get("/:hangoutId/confirmations", async (req, res) => {
 	const { hangoutId } = req.params;
 
@@ -136,7 +136,7 @@ router.get("/:hangoutId/confirmations", async (req, res) => {
 	} catch (error) {
 		res.json(error);
 	}
-});
+}); */
 
 // POST /api/confirmations/:hangoutId to remove from confirmations
 router.post("/:hangoutId/confirmations", isAuthenticated, async (req, res) => {

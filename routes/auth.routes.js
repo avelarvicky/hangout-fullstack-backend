@@ -58,7 +58,7 @@ router.post("/signup", (req, res, next) => {
 
 			// Create the new user in the database
 			// We return a pending promise, which allows us to chain another `then`
-			return User.create({ email, password: hashedPassword, name });
+			return User.create({ email, password: hashedPassword, name, bio: '', profileImg: '' });
 		})
 		.then((createdUser) => {
 			// Deconstruct the newly created user object to omit the password
@@ -101,10 +101,10 @@ router.post("/login", (req, res, next) => {
 
 			if (passwordCorrect) {
 				// Deconstruct the user object to omit the password
-				const { _id, email, name } = foundUser;
+				const { _id, email, name, bio, profileImg } = foundUser;
 
 				// Create an object that will be set as the token payload
-				const payload = { _id, email, name };
+				const payload = { _id, email, name, bio, profileImg };
 
 				// Create a JSON Web Token and sign it
 				const authToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
@@ -144,13 +144,14 @@ router.get("/userprofile", isAuthenticated, async (req, res) => {
 	}
 });
 
+// POST /userprofile/edit to edit user profile
 router.post("/userprofile/edit", isAuthenticated, async (req, res) => {
 	const { bio, profileImg } = req.body;
 	const currentUser = req.payload._id;
 	try {
 		let updateUserProfile = await User.findByIdAndUpdate(currentUser, {
-			bio,
-			profileImg,
+			bio: bio,
+			profileImg: profileImg,
 		});
 		res.json(updateUserProfile);
 	} catch (error) {
