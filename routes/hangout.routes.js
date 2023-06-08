@@ -12,13 +12,13 @@ const Comment = require("../models/Comment.model");
 const User = require("../models/User.model");
 
 // POST /api/hangouts route that creates a new hangout
-router.post("/hangouts", async (req, res) => {
-	const { title, description, location, date, time, image, auth } = req.body;
+router.post("/hangouts", isAuthenticated, async (req, res, next) => {
+	const { user, title, description, location, date, time, image, auth } = req.body;
+
+	const currentUser = req.payload._id;
 
 	try {
-		let response;
-
-		response = await Hangout.create({
+		let newHangout = await Hangout.create({
 			title,
 			description,
 			location,
@@ -29,7 +29,9 @@ router.post("/hangouts", async (req, res) => {
 			comments: [],
 		});
 
-		res.json(response);
+		await Hangout.findByIdAndUpdate(newHangout._id, {$push: {user: currentUser}})
+
+		res.status(201).json(newHangout);
 	} catch (error) {
 		res.json(error);
 	}
@@ -39,7 +41,7 @@ router.post("/hangouts", async (req, res) => {
 router.get("/hangouts", async (req, res) => {
 	try {
 		let allHangouts = await Hangout.find().populate("comments");
-		/* await allHangouts.populate("user"); */
+		await allHangouts.populate("user");
 		res.json(allHangouts);
 	} catch (error) {
 		res.json(error);
