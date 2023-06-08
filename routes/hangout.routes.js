@@ -13,12 +13,13 @@ const User = require("../models/User.model");
 
 // POST /api/hangouts route that creates a new hangout
 router.post("/hangouts", isAuthenticated, async (req, res, next) => {
-	const { user, title, description, location, date, time, image, auth } = req.body;
+	const { title, description, location, date, time, image, auth } = req.body;
 
 	const currentUser = req.payload._id;
 
 	try {
 		let newHangout = await Hangout.create({
+			user: currentUser,
 			title,
 			description,
 			location,
@@ -28,8 +29,6 @@ router.post("/hangouts", isAuthenticated, async (req, res, next) => {
 			auth,
 			comments: [],
 		});
-
-		await Hangout.findByIdAndUpdate(newHangout._id, {$push: {user: currentUser}})
 
 		res.status(201).json(newHangout);
 	} catch (error) {
@@ -41,7 +40,7 @@ router.post("/hangouts", isAuthenticated, async (req, res, next) => {
 router.get("/hangouts", async (req, res) => {
 	try {
 		let allHangouts = await Hangout.find().populate("comments");
-		await allHangouts.populate("user");
+
 		res.json(allHangouts);
 	} catch (error) {
 		res.json(error);
@@ -59,6 +58,7 @@ router.get("/hangouts/:hangoutId", async (req, res) => {
 
 	try {
 		let foundHangout = await Hangout.findById(hangoutId).populate("comments");
+		await foundHangout.populate("user");
 
 		res.status(200).json(foundHangout);
 	} catch (error) {
@@ -109,15 +109,8 @@ router.delete("/hangouts/:hangoutId", async (req, res) => {
 /* router.use("/auth", authRoutes); */
 
 // POST /api/:hangoutId/confirmations to add to confirmations
-router.post("/:hangoutId/confirmations", async (req, res) => {
-	const { hangoutId } = req.params;
-	const { name } = req.body;
-
-	if (!mongoose.Types.ObjectId.isValid(hangoutId)) {
-		res.status(400).json({ message: "specified id is not valid" });
-		return;
-	}
-
+router.post("/:hangoutId/confirmations/:name", async (req, res) => {
+	const { hangoutId, name } = req.params;
 	try {
 		const updatedHangout = await Hangout.findByIdAndUpdate(
 			hangoutId,

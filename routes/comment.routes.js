@@ -5,14 +5,15 @@ const Hangout = require("../models/Hangout.model");
 const Comment = require("../models/Comment.model");
 
 // POST '/api/comments' route to create a new comment
-router.post("/:hangoutId/comments", async (req, res) => {
+router.post("/:hangoutId/comments/:userId", async (req, res) => {
 	const { content } = req.body;
-	const { hangoutId } = req.params;
+	const { hangoutId, userId } = req.params;
 	// const user  = req.payload._id;
 	try {
 		// create a new comment
 		let newComment = await Comment.create({
-			content
+			content,
+			author: userId,
 		});
 
 		// push new comment to hangout
