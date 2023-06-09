@@ -152,7 +152,7 @@ router.post("/userprofile/edit", isAuthenticated, async (req, res) => {
 		let updateUserProfile = await User.findByIdAndUpdate(currentUser, {
 			bio: bio,
 			profileImg: profileImg,
-		});
+		}, {new: true});
 		res.json(updateUserProfile);
 	} catch (error) {
 		res.json(error);
